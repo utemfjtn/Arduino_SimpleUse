@@ -8,9 +8,33 @@ double readVal3 = 0;
 double readVal4 = 0;
 double readVal5 = 0;
 double volConvert = 0.1282; //used for analog divider board. currently connect 680k and 100k resistor.
+const int di1 = 2;
+const int di2 = 3;
+const int di3 = 4;
+const int di4 = 5;
+const int do1 =  8;
+const int do2 =  9;
+const int do3 =  10;
+const int do4 =  11;   
+int lastdi1;
+int lastdi2;
+int lastdi3;
+int lastdi4;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  pinMode(di1, INPUT);
+  pinMode(di2, INPUT);
+  pinMode(di3, INPUT);
+  pinMode(di4, INPUT);
+  pinMode(do1, OUTPUT);
+  pinMode(do2, OUTPUT);
+  pinMode(do3, OUTPUT);
+  pinMode(do4, OUTPUT);
+  lastdi1 = 0;
+  lastdi2 = 0;
+  lastdi3 = 0;
+  lastdi4 = 0;
 }
 
 void loop() {
@@ -27,8 +51,16 @@ void loop() {
       delay(5);
     } else if (inputString.indexOf("HELP") != -1){
       showHelp();
+    } else if (inputString.indexOf("DIEND") != -1){
+      inputString = "";
+      stringComplete = false;
+      Serial.println("DIEnd, DILoop Stoped!");
+    } else if (inputString.indexOf("DILOOP") != -1){
+      getDIs();
     } else if (inputString.indexOf("UPDATECONVERT") != -1){
       updateVolConvert();
+    } else if (inputString.indexOf("DO") != -1){
+      writeDO();
     } else if (inputString.indexOf("START") != -1){
       getAllVoltage();
       delay(250);
@@ -43,13 +75,74 @@ void loop() {
   }
 }
 void showHelp(){
+  //HELP
   Serial.println("Reset,reset All values and strings");
   Serial.println("Stop,Stop Analog read");
   Serial.println("Start,Start Analog read with delay 250ms");
   Serial.println("UpdateConvert,eg:UpdateConvert:0.1234, update the analog divider(defalut:0.1282, 680k + 100k resistor) factor");
+  Serial.println("DILoop,Get DI return every 10ms,1 is true, 0 is false");
+  Serial.println("DIEnd,Stop Get DI");
+  Serial.println("DO,eg:DO:1,1; or DO:1,0; 1 is true, 0 is false");
   Serial.println("HELP,Show all commands and samples.");
   inputString = "";
   stringComplete = false;
+}
+void writeDO(){
+  int pos = inputString.indexOf("DO");
+  int ch = inputString.substring(pos+3,pos+4).toInt();
+  bool val;
+  if(inputString.substring(pos+5,pos+6)=="1"){
+    val = true;
+  } else{
+    val = false;
+  }
+  switch (ch) {
+    case 1:
+        digitalWrite(do1, val);
+      break;
+    case 2:
+        digitalWrite(do2, val);
+      break;
+    case 3:
+        digitalWrite(do3, val);
+      break;
+    case 4:
+        digitalWrite(do4, val);
+      break;
+    default:
+      // statements
+      break;
+  }
+  Serial.print("Do Write,Ch:");
+  Serial.print(ch);
+  Serial.print(",value:");
+  Serial.println(val);
+  // clear the string:
+  inputString = "";
+  stringComplete = false;
+  delay(5);
+}
+void getDIs(){
+  int distatus1 = digitalRead(di1);
+  int distatus2 = digitalRead(di2);
+  int distatus3 = digitalRead(di3);
+  int distatus4 = digitalRead(di4);
+  if (lastdi1 != distatus1 || lastdi2 != distatus2 || lastdi3 != distatus3 || lastdi4 != distatus4){
+    lastdi1 = distatus1;
+    lastdi2 = distatus2;
+    lastdi3 = distatus3;
+    lastdi4 = distatus4;
+    Serial.print("DI:");
+    Serial.print(distatus1);
+    Serial.print(",");
+    Serial.print(distatus2);
+    Serial.print(",");
+    Serial.print(distatus3);
+    Serial.print(",");
+    Serial.print(distatus4);
+    Serial.println(";");
+  }
+  delay(10);
 }
 void updateVolConvert(){
   volConvert = inputString.substring(inputString.indexOf("UpdateConvert")+14).toDouble();
@@ -143,6 +236,6 @@ void serialEvent() {
     if (inChar == '\n') {
       stringComplete = true;
     }
-    delay(10);
+    delay(5);
   }
 }
