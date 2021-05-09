@@ -55,8 +55,12 @@ void loop() {
       inputString = "";
       stringComplete = false;
       Serial.println("DIEnd, DILoop Stoped!");
+    } else if (inputString.indexOf("DISINGLE") != -1){
+      getDIs(true);
+      inputString = "";
+      stringComplete = false;
     } else if (inputString.indexOf("DILOOP") != -1){
-      getDIs();
+      getDIs(false);
     } else if (inputString.indexOf("UPDATECONVERT") != -1){
       updateVolConvert();
     } else if (inputString.indexOf("DO") != -1){
@@ -80,6 +84,7 @@ void showHelp(){
   Serial.println("Stop,Stop Analog read");
   Serial.println("Start,Start Analog read with delay 250ms");
   Serial.println("UpdateConvert,eg:UpdateConvert:0.1234, update the analog divider(defalut:0.1282, 680k + 100k resistor) factor");
+  Serial.println("DISingle,Get DI once,1 is true, 0 is false");
   Serial.println("DILoop,Get DI return every 10ms,1 is true, 0 is false");
   Serial.println("DIEnd,Stop Get DI");
   Serial.println("DO,eg:DO:1,1; or DO:1,0; 1 is true, 0 is false");
@@ -122,12 +127,12 @@ void writeDO(){
   stringComplete = false;
   delay(5);
 }
-void getDIs(){
+void getDIs(bool single){
   int distatus1 = digitalRead(di1);
   int distatus2 = digitalRead(di2);
   int distatus3 = digitalRead(di3);
   int distatus4 = digitalRead(di4);
-  if (lastdi1 != distatus1 || lastdi2 != distatus2 || lastdi3 != distatus3 || lastdi4 != distatus4){
+  if (single || lastdi1 != distatus1 || lastdi2 != distatus2 || lastdi3 != distatus3 || lastdi4 != distatus4){
     lastdi1 = distatus1;
     lastdi2 = distatus2;
     lastdi3 = distatus3;
