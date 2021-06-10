@@ -7,7 +7,8 @@ double readVal2 = 0;
 double readVal3 = 0;
 double readVal4 = 0;
 double readVal5 = 0;
-double volConvert = 0.1282; //used for analog divider board. currently(0.1282) connect 680k and 100k resistor.
+double volConvert = 0.0221642; //used for analog divider board. currently(0.0221642) connect 300k and 6.8k resistor.
+double VolOffset = 0.5;
 const int di1 = 2;
 const int di2 = 3;
 const int di3 = 4;
@@ -185,8 +186,8 @@ void getAllVoltage(){
     double val3 = 0;
     double val4 = 0;
     double val5 = 0;
-    int acqloops = 10;
-    int intdelay = 2;
+    int acqloops = 50;
+    int intdelay = 1;
     int k;    // counter variable
     for (k = 0; k < acqloops; k++)
     {
@@ -203,13 +204,19 @@ void getAllVoltage(){
       val5 += analogRead(A5);    // read the input pin
       delay(intdelay);
     }
-    double adc = 0.0049;//fixed adc from 5v 10 bit.    
+    double adc = 0.0049;//fixed adc from 5v 10 bit.   
     readVal0 = (adc * val0 / acqloops) / volConvert; 
     readVal1 = (adc * val1 / acqloops) / volConvert; 
     readVal2 = (adc * val2 / acqloops) / volConvert; 
     readVal3 = (adc * val3 / acqloops) / volConvert; 
     readVal4 = (adc * val4 / acqloops) / volConvert;  
     readVal5 = (adc * val5 / acqloops) / volConvert; 
+    if (readVal0 >= VolOffset + 0.5) readVal0 += VolOffset;
+    if (readVal1 >= VolOffset + 0.5) readVal1 += VolOffset;
+    if (readVal2 >= VolOffset + 0.5) readVal2 += VolOffset;
+    if (readVal3 >= VolOffset + 0.5) readVal3 += VolOffset;
+    if (readVal4 >= VolOffset + 0.5) readVal4 += VolOffset;
+    if (readVal5 >= VolOffset + 0.5) readVal5 += VolOffset;
     Serial.print(readVal0);
     Serial.print(";");
     Serial.print(readVal1);
