@@ -7,35 +7,39 @@ double readVal2 = 0;
 double readVal3 = 0;
 double readVal4 = 0;
 double readVal5 = 0;
-double volConvert = 0.0221642; //used for analog divider board. currently(0.0221642) connect 300k and 6.8k resistor.
+double volConvert = 0.135447; //used for analog divider board. currently(0.135447) connect 300k and 47k resistor.
 double VolOffset = 0.5;
 const int di1 = 2;
 const int di2 = 3;
 const int di3 = 4;
-const int di4 = 5;
-const int do1 =  8;
-const int do2 =  9;
-const int do3 =  10;
-const int do4 =  11;   
+const int do1 = 5;
+const int do2 =  6;
+const int do3 =  7;
+const int do4 =  8;
+const int do5 =  9;
+const int do6 =  10;
+const int do7 =  11;   
+const int do8 =  12;
 int lastdi1;
 int lastdi2;
 int lastdi3;
-int lastdi4;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  pinMode(di1, INPUT);
-  pinMode(di2, INPUT);
-  pinMode(di3, INPUT);
-  pinMode(di4, INPUT);
+  pinMode(di1, INPUT_PULLUP);
+  pinMode(di2, INPUT_PULLUP);
+  pinMode(di3, INPUT_PULLUP);
   pinMode(do1, OUTPUT);
   pinMode(do2, OUTPUT);
   pinMode(do3, OUTPUT);
   pinMode(do4, OUTPUT);
+  pinMode(do5, OUTPUT);
+  pinMode(do6, OUTPUT);
+  pinMode(do7, OUTPUT);
+  pinMode(do8, OUTPUT);
   lastdi1 = 0;
   lastdi2 = 0;
   lastdi3 = 0;
-  lastdi4 = 0;
 }
 
 void loop() {
@@ -81,14 +85,15 @@ void loop() {
 }
 void showHelp(){
   //HELP
+  Serial.println("Created by YAN.Qian at 20210619. Version 1.00");
   Serial.println("Reset,reset All values and strings");
   Serial.println("Stop,Stop Analog read");
   Serial.println("Start,Start Analog read with delay 250ms");
-  Serial.println("UpdateConvert,eg:UpdateConvert:0.1234, update the analog divider(defalut:0.1282, 680k + 100k resistor) factor");
+  Serial.println("UpdateConvert,eg:UpdateConvert:0.135447, used for analog divider board. currently(0.135447) connect 300k and 47k resistor.");
   Serial.println("DISingle,Get DI once,1 is true, 0 is false");
   Serial.println("DILoop,Get DI return every 10ms,1 is true, 0 is false");
-  Serial.println("DIEnd,Stop Get DI");
-  Serial.println("DO,eg:DO:1,1; or DO:1,0; 1 is true, 0 is false");
+  Serial.println("DIEnd,Stop Get DI, pin 2-4 means di 1-3.");
+  Serial.println("DO,pin 5-12 means do 1-8.eg:DO:1,1; or DO:1,0; 1 is true, 0 is false");
   Serial.println("HELP,Show all commands and samples.");
   inputString = "";
   stringComplete = false;
@@ -115,6 +120,18 @@ void writeDO(){
     case 4:
         digitalWrite(do4, val);
       break;
+    case 5:
+        digitalWrite(do5, val);
+      break;
+    case 6:
+        digitalWrite(do6, val);
+      break;
+    case 7:
+        digitalWrite(do7, val);
+      break;
+    case 8:
+        digitalWrite(do8, val);
+      break;
     default:
       // statements
       break;
@@ -132,20 +149,16 @@ void getDIs(bool single){
   int distatus1 = digitalRead(di1);
   int distatus2 = digitalRead(di2);
   int distatus3 = digitalRead(di3);
-  int distatus4 = digitalRead(di4);
-  if (single || lastdi1 != distatus1 || lastdi2 != distatus2 || lastdi3 != distatus3 || lastdi4 != distatus4){
+  if (single || lastdi1 != distatus1 || lastdi2 != distatus2 || lastdi3 != distatus3){
     lastdi1 = distatus1;
     lastdi2 = distatus2;
     lastdi3 = distatus3;
-    lastdi4 = distatus4;
     Serial.print("DI:");
     Serial.print(distatus1);
     Serial.print(",");
     Serial.print(distatus2);
     Serial.print(",");
     Serial.print(distatus3);
-    Serial.print(",");
-    Serial.print(distatus4);
     Serial.println(";");
   }
   delay(10);
@@ -169,7 +182,6 @@ void resetAll(){
   readVal3 = 0;
   readVal4 = 0;
   readVal5 = 0;
-  volConvert = 0.1282; //used for analog divider board. currently connect 680k and 100k resistor.
   // clear the string:
   inputString = "";
   stringComplete = false;
@@ -177,9 +189,18 @@ void resetAll(){
   Serial.print("Reseted All!volConvert:");
   Serial.println(volConvert);
   delay(5);
+  digitalWrite(do1, false);
+  digitalWrite(do2, false);
+  digitalWrite(do3, false);
+  digitalWrite(do4, false);
+  digitalWrite(do5, false);
+  digitalWrite(do6, false);
+  digitalWrite(do7, false);
+  digitalWrite(do8, false);
   resetFunc();
 }
 void getAllVoltage(){
+    delay(50);
     double val0 = 0;
     double val1 = 0;
     double val2 = 0;
@@ -246,6 +267,7 @@ void serialEvent() {
     // if the incoming character is a newline, set a flag so the main loop can
     // do something about it:
     if (inChar == '\n') {
+      Serial.print("inputString:" + inputString);
       stringComplete = true;
     }
     delay(5);
